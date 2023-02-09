@@ -1,0 +1,29 @@
+https://forums.rpgmakerweb.com/index.php?threads/tileset-dimensions.47064/post-474739
+ACE
+A1 and A2 are 512 x 384 pixels
+A3 is 512 x 256 pixels
+A4 is 512 x 480 pixels
+A5 is 256 x 512 pixels
+B-E Tilesets are 512 x 512 pixels.
+
+X 1.5
+MV
+A1 and A2 are 768 x 576 pixels
+A3 is 768 x 384 pixels
+A4 is 768 x 720 pixels
+A5 is 384 x 768 pixels
+B-E Tilesets are 768 x 768 pixels.
+
+The MV individual tiles are 48x48 instead of Ace's 32x32, so multiply the dimensions of each tileset image by 1.5 to get the MV measurements.
+
+https://wiki.gamedevalliance.fr/rpgmaker/templates/mv/
+
+https://wiki.gamedevalliance.fr/rpgmaker/comparatif/
+
+https://forums.rpgmakerweb.com/index.php?threads/question-about-map-json-files-and-their-relationship-to-tileset-json.76860/#post-734445
+Basically, you have numTiles =  width * height
+There are 6 layers, each layer with numTiles values
+The array is width * height * 6
+First 4 layers represent tile ID's, layer 5 is shadows, layer 6 is region.
+The tile ID's are internal tile ID's that the tilemap uses to determine which bitmap to draw, and how to draw it (in the case of auto-tiles)
+The format for the tile ID's is similar to what you had in VX/Ace, where 0 to 1024 are for pages B-E, and everything beyond that is for autotiles.
