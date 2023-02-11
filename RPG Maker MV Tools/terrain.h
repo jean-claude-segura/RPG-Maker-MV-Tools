@@ -1037,6 +1037,6 @@ namespace terrain {
             }
         }
         //rivers_arrayed(arrHeights, SIZEX, SIZEY);
-        rivers(arrHeights, SIZEX, SIZEY);
+        //rivers(arrHeights, SIZEX, SIZEY);
     }
 }
