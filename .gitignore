@@ -4,7 +4,7 @@ LLVMDebug/
 Debug/
 x64/
 ipch/
-Vigilant/x64
-Vigilant/Debug/
-Vigilant/Vigilant.aps
-Vigilant/Vigilant.vcxproj.user
+RPG Maker MV Tools/x64
+RPG Maker MV Tools/Debug/
+RPG Maker MV Tools/RPG Maker MV Tools.aps
+RPG Maker MV Tools/RPG Maker MV Tools.vcxproj.user
