@@ -141,15 +141,38 @@ void _erosion_hydraulic(
     std::size_t SIZEX,
     std::size_t SIZEY,
     int x, int y,
-    std::vector<std::pair<int, int>>& vPath)
+    std::vector<std::pair<int, int>>& vPath,
+    const float _water = 1.0f,
+    const float _sediment = 0.0f,
+    const float _erosionRate = 0.2f,
+    const float _depositionRate = 0.1f,
+    const float _evaporation = 0.05f)
 {
     using Node = std::tuple<int, int, int>;
 
-    float water = 1.0f;        // quantité d'eau transportée
-    float sediment = 0.0f;     // sédiment transporté
-    const float erosionRate = 0.2f;
-    const float depositionRate = 0.1f;
-    const float evaporation = 0.05f;
+    // Quantité d'eau transportée par la goutte.
+    // Plus elle est élevée, plus la goutte parcourt de distance
+    // et peut transporter de sédiment avant de s'évaporer.
+    float water = 10.0f;
+
+    // Quantité de matériau actuellement transporté.
+    // Augmente lors de l'érosion (descente),
+    // diminue lors du dépôt (montée ou plateau).
+    float sediment = _sediment;
+
+    // Proportion de terrain arrachée lors d'une descente.
+    // Valeur élevée = érosion agressive, rivières profondes.
+    // Valeur faible = érosion douce et plus naturelle.
+    const float erosionRate = _erosionRate;
+
+    // Proportion de sédiment déposée lorsque la goutte ne descend plus.
+    // Plus c'est élevé, plus les zones plates/montantes s'accumulent.
+    const float depositionRate = _depositionRate;
+
+    // Quantité d'eau perdue à chaque étape.
+    // Valeur élevée = goutte courte, rivière courte.
+    // Valeur faible = goutte longue, rivière plus sinueuse.
+    const float evaporation = _evaporation;
 
     std::stack<std::pair<int, int>> st;
     st.push({ x, y });
@@ -219,15 +242,38 @@ void _erosion_hydraulic_iter(
     std::size_t SIZEX,
     std::size_t SIZEY,
     int x, int y,
-    std::vector<std::pair<int, int>>& vPath)
+    std::vector<std::pair<int, int>>& vPath,
+    const float _water = 1.0f,
+    const float _sediment = 0.0f,
+    const float _erosionRate = 0.2f,
+    const float _depositionRate = 0.1f,
+    const float _evaporation = 0.05f)
 {
     using Node = std::tuple<int, int, int>;
 
-    float water = 1.0f;
-    float sediment = 0.0f;
-    const float erosionRate = 0.2f;
-    const float depositionRate = 0.1f;
-    const float evaporation = 0.05f;
+    // Quantité d'eau transportée par la goutte.
+    // Plus elle est élevée, plus la goutte parcourt de distance
+    // et peut transporter de sédiment avant de s'évaporer.
+    float water = 10.0f;
+
+    // Quantité de matériau actuellement transporté.
+    // Augmente lors de l'érosion (descente),
+    // diminue lors du dépôt (montée ou plateau).
+    float sediment = _sediment;
+
+    // Proportion de terrain arrachée lors d'une descente.
+    // Valeur élevée = érosion agressive, rivières profondes.
+    // Valeur faible = érosion douce et plus naturelle.
+    const float erosionRate = _erosionRate;
+
+    // Proportion de sédiment déposée lorsque la goutte ne descend plus.
+    // Plus c'est élevé, plus les zones plates/montantes s'accumulent.
+    const float depositionRate = _depositionRate;
+
+    // Quantité d'eau perdue à chaque étape.
+    // Valeur élevée = goutte courte, rivière courte.
+    // Valeur faible = goutte longue, rivière plus sinueuse.
+    const float evaporation = _evaporation;
 
     std::stack<std::pair<int, int>> st;
     st.push({ x, y });
