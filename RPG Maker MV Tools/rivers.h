@@ -354,6 +354,23 @@ void _erosion(
     if (!_levelmin(arrHeights, SIZEX, SIZEY, x, y, vPath, candidats))
         return;
 
+    if(!candidats.empty())
+    {
+        int nx = std::get<0>(candidats.front());
+        int ny = std::get<1>(candidats.front());
+        // Emp�che les cycles
+        if (std::find(vPath.begin(), vPath.end(), std::make_pair(nx, ny)) == vPath.end())
+        {
+            vPath.emplace_back(nx, ny);
+
+            // Si on atteint l'eau ou une zone d�j� creus�e, on s'arr�te
+            if (arrHeights[nx][ny] > 0)
+                _erosion(arrHeights, SIZEX, SIZEY, nx, ny, vPath);
+        }
+    }
+
+    return;
+
     for (const auto& c : candidats)
     {
         int nx = std::get<0>(c);
@@ -399,6 +416,25 @@ void _erosion_iter(
         std::vector<Node> candidats;
         if (!_levelmin(arrHeights, SIZEX, SIZEY, cx, cy, vPath, candidats))
             continue;
+
+        if (!candidats.empty())
+        {
+            int nx = std::get<0>(candidats.front());
+            int ny = std::get<1>(candidats.front());
+            // Emp�che les cycles
+            if (std::find(vPath.begin(), vPath.end(), std::make_pair(nx, ny)) == vPath.end())
+            {
+                vPath.emplace_back(nx, ny);
+
+                // Si on atteint l'eau ou une zone creus�e
+                if (arrHeights[nx][ny] <= 0)
+                    continue;
+
+                st.push({ nx, ny });
+            }
+        }
+
+        continue;
 
         for (const auto& c : candidats)
         {
