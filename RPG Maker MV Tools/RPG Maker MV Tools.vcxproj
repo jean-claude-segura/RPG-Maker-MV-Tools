@@ -150,19 +150,30 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="diamond_square.h" />
     <ClInclude Include="Exterieur.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="MakerMVMap.h" />
+    <ClInclude Include="misc_landscape.h" />
+    <ClInclude Include="opensimplex2.h" />
+    <ClInclude Include="perlin_noise.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="rivers.h" />
     <ClInclude Include="RPG Maker MV Tools.h" />
+    <ClInclude Include="simplex.h" />
+    <ClInclude Include="stamp_noise.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="terrain.h" />
+    <ClInclude Include="terrain_base.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Exterieur.cpp" />
     <ClCompile Include="MakerMVMap.cpp" />
+    <ClCompile Include="misc_landscape.cpp" />
+    <ClCompile Include="opensimplex2.cpp" />
+    <ClCompile Include="perlin_noise.cpp" />
     <ClCompile Include="RPG Maker MV Tools.cpp" />
-    <ClCompile Include="terrain.cpp" />
+    <ClCompile Include="simplex.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="RPG Maker MV Tools.rc" />

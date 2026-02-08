@@ -1,4 +1,4 @@
-#include "terrain.h"
+#include "perlin_noise.h"
 
 // http://universe.tuxfamily.org/oldblog/index.php?post/2016/03/11/G%C3%A9n%C3%A9ration-proc%C3%A9durale-de-terrain-I
 // https://github.com/DenisSalem/UNIVERSE/tree/master/PoC/improvedPerlinNoise
@@ -29,7 +29,7 @@ int G[8][2] = {
 // pseudo-aléatoire. Pour obtenir un vrai terrain pseudo-aléatoire différent à chaque
 // lancement du programme il faudrait changer ou désordonner cette table de permutations
 // avant d'entrer dans la boucle principale où est appelée notre fonction de bruit.
-int terrain::POrg[256] = {
+int POrg[256] = {
  235,249,14,239,107,49,192,214, 31,181,199,106,157,184, 84,204,176,115,121,50,45,
  127, 4,150,254,138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,
  112,104,218,246,97,228,251,34,242,193,238,210,144,12,191,179,162,241,81,51,145,
@@ -44,7 +44,7 @@ int terrain::POrg[256] = {
  151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,
  156,180 };
 
-int terrain::P[256] = {};
+int P[256] = {};
 
 // Les coordonnées x et y doivent être des nombres réels positifs, sinon nous serions en 
 // dehors de notre grille. Pour cela on envoie à notre fonction les coordonnées d'un
@@ -69,7 +69,7 @@ int terrain::P[256] = {};
 //
 //    <--- 2 ---> taille de la grille mise à l'échelle
 
-double terrain::PerlinNoise2D(const unsigned int x, const unsigned int y, const unsigned int scale) {
+double PerlinNoise2D(const unsigned int x, const unsigned int y, const unsigned int scale) {
 
     // Chaque vecteur gradient est référé par un indice Gn du tableau G
     int G1, G2, G3, G4;
@@ -143,169 +143,4 @@ double terrain::PerlinNoise2D(const unsigned int x, const unsigned int y, const 
 
     // On retourne le résultat normalisé.
     return (1 + iST + iY * (iUV - iST)) * 0.5;
-}
-
-double terrain::simplex2d(double x, double y) {
-    const double F2 = 0.5 * (sqrt(3.0) - 1.0);
-    const double G2 = (3.0 - sqrt(3.0)) / 6.0;
-
-    double s = (x + y) * F2;
-    int i = fastfloor(x + s);
-    int j = fastfloor(y + s);
-
-    double t = (i + j) * G2;
-    double X0 = i - t;
-    double Y0 = j - t;
-    double x0 = x - X0;
-    double y0 = y - Y0;
-
-    int i1, j1;
-    if (x0 > y0) { i1 = 1; j1 = 0; }
-    else { i1 = 0; j1 = 1; }
-
-    double x1 = x0 - i1 + G2;
-    double y1 = y0 - j1 + G2;
-    double x2 = x0 - 1.0 + 2.0 * G2;
-    double y2 = y0 - 1.0 + 2.0 * G2;
-
-    int ii = i & 255;
-    int jj = j & 255;
-
-    int gi0 = perm[ii + perm[jj]] & 7;
-    int gi1 = perm[ii + i1 + perm[jj + j1]] & 7;
-    int gi2 = perm[ii + 1 + perm[jj + 1]] & 7;
-
-    double n0, n1, n2;
-
-    double t0 = 0.5 - x0 * x0 - y0 * y0;
-    if (t0 < 0) n0 = 0.0;
-    else {
-        t0 *= t0;
-        n0 = t0 * t0 * dot(grad2[gi0], x0, y0);
-    }
-
-    double t1 = 0.5 - x1 * x1 - y1 * y1;
-    if (t1 < 0) n1 = 0.0;
-    else {
-        t1 *= t1;
-        n1 = t1 * t1 * dot(grad2[gi1], x1, y1);
-    }
-
-    double t2 = 0.5 - x2 * x2 - y2 * y2;
-    if (t2 < 0) n2 = 0.0;
-    else {
-        t2 *= t2;
-        n2 = t2 * t2 * dot(grad2[gi2], x2, y2);
-    }
-
-    return 70.0 * (n0 + n1 + n2); // ? [-1,1]
-}
-
-double terrain::simplex_2d(double x, double y, int seed) {
-    buildPermutation(seed);
-    return simplex2d(x, y);
-}
-
-#ifdef _DEBUG
-void terrain::thrSinusCard(std::unique_ptr<std::unique_ptr<double[]>[]>& matrix, std::unique_ptr<std::unique_ptr<double[]>[]>& _sinc, const unsigned int scale)
-#else
-void terrain::thrSinusCard(std::unique_ptr<std::unique_ptr<std::atomic<double>[]>[]>& matrix, std::unique_ptr<std::unique_ptr<double[]>[]>& _sinc, const unsigned int scale)
-#endif 
-{
-    for (int iter = 0; iter < 250; ++iter) {
-        double x, y;
-        double K = random_between(0., static_cast<double>(scale) / 2.);
-        double L = random_between(0., 100.);
-        x = random_between(0., static_cast<double>(scale));
-        y = random_between(0., static_cast<double>(scale));
-        for (int i = 0; i < scale; ++i) {
-            for (int j = 0; j < scale; ++j) {
-                /*double X = x - i;
-                double Y = y - j;
-                double Z = sqrt(X * X + Y * Y);
-                double h = sinc(Z);
-                matrix[i][j] += h;*/
-                //double X = abs(x - i);
-                //double Y = abs(y - j);
-                int X = std::min<int>(abs(x - i), scale - 1);
-                int Y = std::min<int>(abs(y - j), scale - 1);
-#ifdef _DEBUG
-                matrix[i][j] += _sinc[X][Y];
-#else
-                matrix[i][j] = matrix[i][j] + _sinc[X][Y];
-#endif
-            }
-        }
-    }
-}
-
-const double terrain::OpenSimplex2S::GRADIENTS_2D[16][2] = {
-    { 0.1305261922,  0.9914448614}, { 0.3826834324,  0.9238795325},
-    { 0.6087614290,  0.7933533403}, { 0.7933533403,  0.6087614290},
-    { 0.9238795325,  0.3826834324}, { 0.9914448614,  0.1305261922},
-    { 0.9914448614, -0.1305261922}, { 0.9238795325, -0.3826834324},
-    { 0.7933533403, -0.6087614290}, { 0.6087614290, -0.7933533403},
-    { 0.3826834324, -0.9238795325}, { 0.1305261922, -0.9914448614},
-    {-0.1305261922, -0.9914448614}, {-0.3826834324, -0.9238795325},
-    {-0.6087614290, -0.7933533403}, {-0.7933533403, -0.6087614290}
-};
-
-terrain::OpenSimplex2S::OpenSimplex2S(int seed) {
-    std::mt19937 rng(seed);
-    std::array<int, 256> p;
-
-    for (int i = 0; i < 256; i++) p[i] = i;
-    std::shuffle(p.begin(), p.end(), rng);
-
-    for (int i = 0; i < 256; i++) {
-        perm[i] = p[i];
-        permGrad2[i] = p[i] % GRADIENTS_2D_COUNT;
-    }
-}
-
-double terrain::OpenSimplex2S::noise2(double x, double y) {
-    // Rotation du domaine (clé de OpenSimplex2S)
-    const double R = 0.5 * (std::sqrt(3.0) - 1.0);
-    double s = (x + y) * R;
-    double xs = x + s;
-    double ys = y + s;
-
-    int xsb = fastfloor(xs);
-    int ysb = fastfloor(ys);
-
-    double xsi = xs - xsb;
-    double ysi = ys - ysb;
-
-    double t = (xsi + ysi) * (1.0 / 3.0);
-    double xr = xsi - t;
-    double yr = ysi - t;
-
-    double value = 0.0;
-
-    // Contributions
-    for (int i = 0; i < 3; i++) {
-        int dx = (i == 0) ? 0 : (xsi > ysi ? 1 : 0);
-        int dy = (i == 0) ? 0 : (xsi > ysi ? 0 : 1);
-
-        if (i == 2) { dx = 1; dy = 1; }
-
-        double dxr = xr - dx + i * (1.0 / 3.0);
-        double dyr = yr - dy + i * (1.0 / 3.0);
-
-        double attn = 0.5 - dxr * dxr - dyr * dyr;
-        if (attn > 0) {
-            int px = (xsb + dx) & 255;
-            int py = (ysb + dy) & 255;
-
-            int gi = permGrad2[(perm[px] + py) & 255];
-            const double* g = GRADIENTS_2D[gi];
-
-            double dot = g[0] * dxr + g[1] * dyr;
-
-            attn *= attn;
-            value += attn * attn * dot;
-        }
-    }
-
-    return value * 99.20689070704672; // Normalisation officielle
 }

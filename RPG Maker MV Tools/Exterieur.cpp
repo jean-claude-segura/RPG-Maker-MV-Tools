@@ -120,8 +120,8 @@ static INT_PTR WmCommand(HWND hDlg, HWND hCtl, int wmId, int wmCode)
 		break;
 	case IDC_FONCTION:
 		if (wmCode == CBN_SELCHANGE) {
-			terrain::generator.seed(1);
-			terrain::initPerlin = true;
+			terrain_base::generator.seed(1);
+			terrain_base::initPerlin = true;
 		}
 		break;
 	case IDC_GENERER:
