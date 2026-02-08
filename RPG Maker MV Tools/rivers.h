@@ -391,6 +391,48 @@ void level(T& arrHeights, const std::size_t SIZEX, const std::size_t SIZEY, cons
     }
 }
 
+enum LANDSCAPE_TYPES {
+    river,
+    erosion,
+    erosion_iter,
+    erosion_hydraulic,
+    erosion_hydraulic_iter
+};
+
+template<typename T>
+void _rivers_helper(T& arrHeights, const std::size_t SIZEX, const std::size_t SIZEY, const int x, const int y, const int nType)
+{
+    std::vector<std::pair<int, int>> vPath;
+    switch (nType)
+    {
+    case 0:
+        _rivers(arrHeights, SIZEX, SIZEY, x, y, vPath);
+        break;
+
+    case 1:
+        _erosion(arrHeights, SIZEX, SIZEY, x, y, vPath);
+        break;
+
+    case 2:
+        _erosion_iter(arrHeights, SIZEX, SIZEY, x, y, vPath);
+        break;
+
+    case 3:
+        _erosion_hydraulic(arrHeights, SIZEX, SIZEY, x, y, vPath);
+        break;
+    case 4:
+        _erosion_hydraulic_iter(arrHeights, SIZEX, SIZEY, x, y, vPath);
+        break;
+    default:
+        // Valeur inattendue : ne rien faire
+        break;
+    }
+
+    for (const auto& ref : vPath) {
+        arrHeights[ref.first][ref.second] = -1;
+    }
+}
+
 // -----------------------------------------------------------------------------
 // rivers
 // Trouve le point le plus haut du terrain,
@@ -398,7 +440,7 @@ void level(T& arrHeights, const std::size_t SIZEX, const std::size_t SIZEY, cons
 // puis marque toutes les cases du chemin en -1.
 // -----------------------------------------------------------------------------
 template<typename T>
-void rivers(T& arrHeights, const std::size_t SIZEX, const std::size_t SIZEY)
+void rivers(T& arrHeights, const std::size_t SIZEX, const std::size_t SIZEY, const int nType)
 {
     // Recherche de la zone la plus haute.
     int x = 0, y = 0;
@@ -410,15 +452,10 @@ void rivers(T& arrHeights, const std::size_t SIZEX, const std::size_t SIZEY)
             }
         }
     }
+
     mPondere.clear();
-    std::vector<std::pair<int, int>> vPath;
-    //_rivers(arrHeights, SIZEX, SIZEY, x, y, vPath);
-    //_erosion(arrHeights, SIZEX, SIZEY, x, y, vPath);
-    //_erosion_iter(arrHeights, SIZEX, SIZEY, x, y, vPath);
-    _erosion_hydraulic_iter(arrHeights, SIZEX, SIZEY, x, y, vPath);
-    for (const auto& ref : vPath) {
-        arrHeights[ref.first][ref.second] = -1;
-    }
+    _rivers_helper(arrHeights, SIZEX, SIZEY, x, y, nType);
+
     /*if (!mPondere.empty()) {
         for (const auto& ref : mPondere) {
             arrHeights[ref.first % SIZEY][ref.first / SIZEY] = -1;
@@ -434,7 +471,7 @@ void rivers(T& arrHeights, const std::size_t SIZEX, const std::size_t SIZEY)
 // S’arrête dès que la hauteur change.
 // -----------------------------------------------------------------------------
 template<typename T>
-void rivers_arrayed(T& arrHeights, const std::size_t SIZEX, const std::size_t SIZEY)
+void rivers_arrayed(T& arrHeights, const std::size_t SIZEX, const std::size_t SIZEY, const int nType)
 {
     // Recherche des extrema locaux.
     std::vector<std::tuple<int, int, int>> vExtrema;
@@ -459,10 +496,7 @@ void rivers_arrayed(T& arrHeights, const std::size_t SIZEX, const std::size_t SI
         auto x = std::get<0>(item);
         auto y = std::get<1>(item);
         std::vector<std::pair<int, int>> vPath;
-        _rivers(arrHeights, SIZEX, SIZEY, x, y, vPath);
-        for (const auto& ref : vPath) {
-            arrHeights[ref.first][ref.second] = -1;
-        }
+        _rivers_helper(arrHeights, SIZEX, SIZEY, x, y, nType);
         if (hmax != std::get<2>(item))
             break;
         else
@@ -472,7 +506,15 @@ void rivers_arrayed(T& arrHeights, const std::size_t SIZEX, const std::size_t SI
 
     for (std::vector<std::tuple<int, int, int>>::iterator it = vExtrema.begin(); it != vExtrema.end();)
     {
-        //delete* it;
         it = vExtrema.erase(it);
     }
+}
+
+template<typename T>
+void rivers_dispatch(T& arrHeights, const std::size_t SIZEX, const std::size_t SIZEY, const int nType, bool bAll = false)
+{
+    if(bAll)
+        rivers_arrayed(arrHeights, SIZEX, SIZEY, nType);
+    else
+        rivers(arrHeights, SIZEX, SIZEY, nType);
 }

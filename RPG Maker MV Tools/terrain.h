@@ -73,7 +73,6 @@ namespace terrain {
                 //vHeights.get()[i].reset();
             }
         }
-        rivers_arrayed(arrHeights, SIZEX, SIZEY);
-        rivers(arrHeights, SIZEX, SIZEY);
+        rivers_dispatch(arrHeights, SIZEX, SIZEY, LANDSCAPE_TYPES::erosion_hydraulic_iter, true);
     }
 }
