@@ -172,6 +172,8 @@ static INT_PTR WmInitDialog(HWND hDlg, WPARAM wParam, LPARAM lParam)
 	SendDlgItemMessage(hDlg, IDC_GENERATEUR, CB_ADDSTRING, 0, LPARAM(L"Tensor"));
 	SendDlgItemMessage(hDlg, IDC_GENERATEUR, CB_ADDSTRING, 0, LPARAM(L"Volcano"));
 	SendDlgItemMessage(hDlg, IDC_GENERATEUR, CB_ADDSTRING, 0, LPARAM(L"Sinus cardinal"));
+	SendDlgItemMessage(hDlg, IDC_GENERATEUR, CB_ADDSTRING, 0, LPARAM(L"simplex"));
+	SendDlgItemMessage(hDlg, IDC_GENERATEUR, CB_ADDSTRING, 0, LPARAM(L"opensimplex2"));
 	SendDlgItemMessage(hDlg, IDC_GENERATEUR, CB_SETCURSEL, 0, 0);
 	setDialog(hDlg, 0, 0);
 

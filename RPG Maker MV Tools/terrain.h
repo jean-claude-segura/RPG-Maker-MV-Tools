@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <random>
 #include <thread>
+#include <algorithm>
 #ifndef _DEBUG
 #include <atomic>
 #endif 
@@ -19,13 +20,14 @@ namespace terrain {
     template <typename T>
     T random_between(const T _min, const T _max)
     {
+        static_assert(std::is_arithmetic_v<T>, "random_between requires arithmetic type");
         T answer = 0;
         if (_max > _min) {
             if constexpr (std::is_same_v<T, double>) {
                 std::uniform_real_distribution<T> distribution(_min, _max);
                 answer = distribution(generator);
             }
-            if constexpr (std::is_same_v<T, int>) {
+            else if constexpr (std::is_same_v<T, int>) {
                 std::uniform_int_distribution<T> distribution(_min, _max);
                 answer = distribution(generator);
             }
@@ -34,7 +36,7 @@ namespace terrain {
     }
 
     /*
-	    vHeights : carré de la forme 2^n + 1.
+        vHeights : carrÃ© de la forme 2^n + 1.
     */
     template<typename T>
     void diamond_square(T& vHeights, const unsigned int size)
@@ -43,59 +45,59 @@ namespace terrain {
         for (int i = 0; i < size; ++i) {
             matrix.get()[i] = std::make_unique<double[]>(size);
         }
-        signed int h = size;// matrix.size();//t.coté()
-        double scale = 1;// matrix.size();//t.coté()
-	    /* initialisation des coins */
-	    matrix[0][0] = random_between(-scale, scale);
-	    matrix[0][h - 1] = random_between(-scale, scale);
-	    matrix[h - 1][h - 1] = random_between(-scale, scale);
-	    matrix[h - 1][0] = random_between(-scale, scale);
-	    signed int i = h - 1;
-	    while (i > 1) {
-		    signed int id = i / 2;
+        signed int h = size;// matrix.size();//t.cotÃ©()
+        double scale = 1;// matrix.size();//t.cotÃ©()
+        /* initialisation des coins */
+        matrix[0][0] = random_between(-scale, scale);
+        matrix[0][h - 1] = random_between(-scale, scale);
+        matrix[h - 1][h - 1] = random_between(-scale, scale);
+        matrix[h - 1][0] = random_between(-scale, scale);
+        signed int i = h - 1;
+        while (i > 1) {
+            signed int id = i / 2;
             scale /= 2.;
-		    // Diamant : le centre de chaque carré prend pour valeur la moyenne des 4 coins
-		    // à laquelle on ajoute une valeur aléatoire.
-		    for (signed int x = id; x < h; x += i) {  /* début de la phase du diamant */
-			    for (signed int y = id; y < h; y += i) {
-				    double moyenne = (matrix[x - id][y - id] + matrix[x - id][y + id] + matrix[x + id][y + id] + matrix[x + id][y - id]) / 4;
-				    matrix[x][y] = moyenne + random_between(-scale, scale);
-			    }
-		    }
-		    signed int décalage = 0;
-		    // Carré : chaque milieu des segments du carré, prend pour valeur la moyenne des 4 points
-		    // formant ce diamant ajoutée d'une valeur aléatoire.
-		    for (signed int x = 0; x < h; x += id) {  /* début de la phase du carré */
-			    if (décalage == 0) {
-				    décalage = id;
-			    }
-			    else {
-				    décalage = 0;
-			    }
-			    for (signed int y = décalage; y < h; y += i) {
-				    double somme = 0;
-				    double n = 0;
-				    if (x >= id) {
-					    somme = somme + matrix[x - id][y];
-					    n = n + 1;
-				    }
-				    if (x + id < h) {
-					    somme = somme + matrix[x + id][y];
-					    n = n + 1;
-				    }
-				    if (y >= id) {
-					    somme = somme + matrix[x][y - id];
-					    n = n + 1;
-				    }
-				    if (y + id < h) {
-					    somme = somme + matrix[x][y + id];
-					    n = n + 1;
-				    }
-				    matrix[x][y] = somme / n + random_between(-scale, scale);
-			    }
-		    }
-		    i = id;
-	    }
+            // Diamant : le centre de chaque carrÃ© prend pour valeur la moyenne des 4 coins
+            // Ã  laquelle on ajoute une valeur alÃ©atoire.
+            for (signed int x = id; x < h; x += i) {  /* dÃ©but de la phase du diamant */
+                for (signed int y = id; y < h; y += i) {
+                    double moyenne = (matrix[x - id][y - id] + matrix[x - id][y + id] + matrix[x + id][y + id] + matrix[x + id][y - id]) / 4;
+                    matrix[x][y] = moyenne + random_between(-scale, scale);
+                }
+            }
+            signed int decalage = 0;
+            // CarrÃ© : chaque milieu des segments du carrÃ©, prend pour valeur la moyenne des 4 points
+            // formant ce diamant ajoutÃ©e d'une valeur alÃ©atoire.
+            for (signed int x = 0; x < h; x += id) {  /* dÃ©but de la phase du carrÃ© */
+                if (decalage == 0) {
+                    decalage = id;
+                }
+                else {
+                    decalage = 0;
+                }
+                for (signed int y = decalage; y < h; y += i) {
+                    double somme = 0;
+                    double n = 0;
+                    if (x >= id) {
+                        somme = somme + matrix[x - id][y];
+                        n = n + 1;
+                    }
+                    if (x + id < h) {
+                        somme = somme + matrix[x + id][y];
+                        n = n + 1;
+                    }
+                    if (y >= id) {
+                        somme = somme + matrix[x][y - id];
+                        n = n + 1;
+                    }
+                    if (y + id < h) {
+                        somme = somme + matrix[x][y + id];
+                        n = n + 1;
+                    }
+                    matrix[x][y] = somme / n + random_between(-scale, scale);
+                }
+            }
+            i = id;
+        }
         double max = -2, min = 2;
         for (unsigned int x = 0; x < size; ++x) {
             for (unsigned int y = 0; y < size; ++y) {
@@ -114,12 +116,13 @@ namespace terrain {
         }
     }
 
-    int POrg[];
-    int P[];
+    extern int POrg[256];
+    extern int P[256];
+
     double PerlinNoise2D(const unsigned int x, const unsigned int y, const unsigned int scale);
 
     /*
-	    vHeights : matrice carrée.
+        vHeights : matrice carrÃ©e.
     */
     template<typename T>
     void perlin_noise(T& vHeights, const unsigned int scale)
@@ -129,54 +132,226 @@ namespace terrain {
             initPerlin = false;
         }
         else {
-            // Il nous faut désordonner la table de permutations :
+            // Il nous faut dÃ©sordonner la table de permutations :
             for (int i = 0; i < 256; ++i)
                 std::swap(P[i], P[random_between(0, 255)]);
         }
 
-	    // Matrice de 256 pixels² simulé avec un tableau de longueur 256²
-	    // C'est dans ce tableau que nous allons stocker notre heightmap
-	    auto grid = std::make_unique<std::unique_ptr<double[]>[]>(scale);
+        // Matrice de 256 pixelsÂ² simulÃ© avec un tableau de longueur 256Â²
+        // C'est dans ce tableau que nous allons stocker notre heightmap
+        auto grid = std::make_unique<std::unique_ptr<double[]>[]>(scale);
         for (int i = 0; i < scale; ++i)
             grid[i] = std::make_unique<double[]>(scale);
 
-	    // i et j correspondent respectivement aux axes x et y.
-	    // k correspond à l'octave courrante.
-	    unsigned int i, j, k;
+        // i et j correspondent respectivement aux axes x et y.
+        // k correspond Ã  l'octave courrante.
+        unsigned int i, j, k;
 
-	    double min = 2., max = 0.;
+        double min = 2., max = 0.;
 
-	    // Selon le type de texture on peut ne pas utiliser de coef ou
-	    // l'utiliser différemment. Mais l'idée ici est de diminuer
-	    // l'influence du bruit à mesure que la fréquence augmente.
-	    double coef = 1.0;
+        // Selon le type de texture on peut ne pas utiliser de coef ou
+        // l'utiliser diffÃ©remment. Mais l'idÃ©e ici est de diminuer
+        // l'influence du bruit Ã  mesure que la frÃ©quence augmente.
+        double coef = 1.0;
 
-	    for (j = 0; j < scale; ++j) {
-		    for (i = 0; i < scale; ++i) {
-			    coef = 1.0;
-			    grid[i][j] = 0;
-			    for (k = scale / 2; k >= 1; k /= 2) {
-				    grid[i][j] += PerlinNoise2D(i, j, k) * coef;
-				    coef /= 2.0;
-			    }
-			    if (min > grid[i][j]) {
-				    min = grid[i][j];
-			    }
-			    if (max < grid[i][j]) {
-				    max = grid[i][j];
-			    }
-		    }
-	    }
+        for (j = 0; j < scale; ++j) {
+            for (i = 0; i < scale; ++i) {
+                coef = 1.0;
+                grid[i][j] = 0;
+                for (k = scale / 2; k >= 1; k /= 2) {
+                    grid[i][j] += PerlinNoise2D(i, j, k) * coef;
+                    coef /= 2.0;
+                }
+                if (min > grid[i][j]) {
+                    min = grid[i][j];
+                }
+                if (max < grid[i][j]) {
+                    max = grid[i][j];
+                }
+            }
+        }
 
-	    // Ici la texture est terminée. Il ne reste plus qu'à la normaliser en
-	    // vue de l'exploiter.
+        // Ici la texture est terminÃ©e. Il ne reste plus qu'Ã  la normaliser en
+        // vue de l'exploiter.
         // 0 <= (grid[i][j] - min) / (max - min) <= 1
-	    for (j = 0; j < scale; ++j) {
-		    for (i = 0; i < scale; ++i) {
-			    //vHeights[i][j] = (grid[i + j * scale] - min) * (1.0 / (max - min));
+        for (j = 0; j < scale; ++j) {
+            for (i = 0; i < scale; ++i) {
+                //vHeights[i][j] = (grid[i + j * scale] - min) * (1.0 / (max - min));
                 vHeights[i][j] = 512 * (grid[i][j] - min) / (max - min) - 255;
-		    }
-	    }
+            }
+        }
+    }
+
+
+    static std::array<int, 512> perm;
+
+    inline void buildPermutation(int seed) {
+        std::array<int, 256> p;
+        for (int i = 0; i < 256; ++i) p[i] = i;
+
+        std::mt19937 rng(seed);
+        std::shuffle(p.begin(), p.end(), rng);
+
+        for (int i = 0; i < 512; ++i)
+            perm[i] = p[i & 255];
+    }
+
+    inline int fastfloor(double x) {
+        int xi = static_cast<int>(x);
+        return x < xi ? xi - 1 : xi;
+    }
+
+    inline double dot(int g[2], double x, double y) {
+        return g[0] * x + g[1] * y;
+    }
+
+    static int grad2[8][2] = {
+        {1,0},{-1,0},{0,1},{0,-1},
+        {1,1},{-1,1},{1,-1},{-1,-1}
+    };
+
+    double simplex2d(double x, double y);
+
+    double simplex_2d(double x, double y, int seed);
+
+    template<typename T>
+    void simplex(T& vHeights, unsigned int scale)
+    {
+        const int seed = generator();
+
+        const int octaves = 6;
+        const double persistence = 0.5;
+        const double world_scale = 128;
+
+        double minVal = 1e9;
+        double maxVal = -1e9;
+
+        // Tableau temporaire en double
+        std::vector<std::vector<double>> grid(scale, std::vector<double>(scale));
+
+        for (unsigned int j = 0; j < scale; ++j) {
+            for (unsigned int i = 0; i < scale; ++i) {
+
+                // --- Domain warp (une seule fois) ---
+                double wx = simplex_2d(i * 0.02, j * 0.02, seed) * 4.0;
+                double wy = simplex_2d(i * 0.02, j * 0.02, seed + 1) * 4.0;
+
+                double x = i + wx;
+                double y = j + wy;
+
+                // --- Accumulation des octaves ---
+                double value = 0.0;
+
+                for (int o = 0; o < octaves; ++o) {
+                    double freq = (1 << o) / world_scale;
+                    double amp = pow(persistence, o);
+
+                    value += simplex_2d(
+                        x * freq,
+                        y * freq,
+                        seed
+                    ) * amp;
+                }
+
+                minVal = (value < minVal) ? value : minVal;
+                maxVal = (value > maxVal) ? value : maxVal;
+
+                grid[i][j] = value;
+            }
+        }
+
+        // --- Normalisation ---
+        double range = maxVal - minVal;
+        if (range < 1e-12) range = 1.0;
+
+        for (unsigned int j = 0; j < scale; ++j) {
+            for (unsigned int i = 0; i < scale; ++i) {
+                vHeights[i][j] =
+                    512.0 * (grid[i][j] - minVal) / range - 255.0;
+            }
+        }
+    }
+
+#pragma once
+#include <array>
+#include <random>
+#include <cmath>
+
+    class OpenSimplex2S {
+    public:
+        explicit OpenSimplex2S(int seed);
+
+        double noise2(double x, double y);
+
+    private:
+        std::array<int, 256> perm;
+        std::array<int, 256> permGrad2;
+
+        static const int GRADIENTS_2D_COUNT = 16;
+        static const double GRADIENTS_2D[16][2];
+
+        static inline double fastfloor(double x) {
+            int xi = (int)x;
+            return x < xi ? xi - 1 : xi;
+        }
+    };
+
+    template<typename T>
+    void opensimplex2(T& vHeights, unsigned int scale)
+    {
+        const int seed = generator();
+
+        OpenSimplex2S noise(seed);
+        OpenSimplex2S warpX(seed + 12345);
+        OpenSimplex2S warpY(seed + 54321);
+
+        const int octaves = 6;
+        const double persistence = 0.5;
+        const double world_scale = 128.0;
+
+        double minVal = 1e9;
+        double maxVal = -1e9;
+
+        // Buffer temporaire en double
+        std::vector<std::vector<double>> grid(scale, std::vector<double>(scale));
+
+        for (unsigned int j = 0; j < scale; ++j) {
+            for (unsigned int i = 0; i < scale; ++i) {
+
+                // --- Domain warp OpenSimplex2S ---
+                double wx = warpX.noise2(i * 0.02, j * 0.02) * 4.0;
+                double wy = warpY.noise2(i * 0.02, j * 0.02) * 4.0;
+
+                double x = i + wx;
+                double y = j + wy;
+
+                // --- Accumulation des octaves ---
+                double value = 0.0;
+
+                for (int o = 0; o < octaves; ++o) {
+                    double freq = (1 << o) / world_scale;
+                    double amp = std::pow(persistence, o);
+
+                    value += noise.noise2(x * freq, y * freq) * amp;
+                }
+
+                minVal = (value < minVal) ? value : minVal;
+                maxVal = (value > maxVal) ? value : maxVal;
+
+                grid[i][j] = value;
+            }
+        }
+
+        // --- Normalisation vers [-255, +255] ---
+        double range = maxVal - minVal;
+        if (range < 1e-12) range = 1.0;
+
+        for (unsigned int j = 0; j < scale; ++j) {
+            for (unsigned int i = 0; i < scale; ++i) {
+                vHeights[i][j] =
+                    static_cast<int>(512.0 * (grid[i][j] - minVal) / range - 255.0);
+            }
+        }
     }
 
     template <typename T>
@@ -197,7 +372,7 @@ namespace terrain {
         for (++itCur; itCur != vMaxs.end(); ++itCur) {
             if (*itPrev == *itCur - 1) {
                 ++(itBase->second);
-                MaxPond = MaxPond > itBase->second ? MaxPond : itBase->second; // Détermination de la longueur de plage la plus étendue.
+                MaxPond = MaxPond > itBase->second ? MaxPond : itBase->second; // DÃ©termination de la longueur de plage la plus Ã©tendue.
                 ++itPrev;
             }
             else {
@@ -210,14 +385,14 @@ namespace terrain {
         auto itDebut = vPlages.begin();
         // Test de l'existence d'une plage circulaire :
         if (itFin->first + itFin->second == SIZEAXE && itDebut->first == 0) {
-            // Il s'agit d'une plage circulaire car composée de deux sous-plages qui se rejoignent par le bord.
-            itDebut->first = itFin->first; // Affectation du point de départ correct.
+            // Il s'agit d'une plage circulaire car composÃ©e de deux sous-plages qui se rejoignent par le bord.
+            itDebut->first = itFin->first; // Affectation du point de dÃ©part correct.
             itDebut->second = itDebut->second + itFin->second; // Affectation de la longueur correcte.
-            MaxPond = MaxPond > itDebut->second ? MaxPond : itDebut->second; // Détermination de la longueur de plage la plus étendue.
+            MaxPond = MaxPond > itDebut->second ? MaxPond : itDebut->second; // DÃ©termination de la longueur de plage la plus Ã©tendue.
             vPlages.pop_back(); // Suppression de la fraction de plage.
         }
 
-        // Suppression des plages moins étendues que la plus étendue :
+        // Suppression des plages moins Ã©tendues que la plus Ã©tendue :
         /*for (auto itPond = vPlages.begin(); itPond != vPlages.end();) {
             if (itPond->second < MaxPond)
                 itPond = vPlages.erase(itPond);
@@ -238,6 +413,8 @@ namespace terrain {
         // Calcul des longueurs des lignes :
         auto iMax = std::make_unique <int[]>(SIZEX);
         auto jMax = std::make_unique <int[]>(SIZEY);
+        std::fill_n(iMax.get(), SIZEX, 0);
+        std::fill_n(jMax.get(), SIZEY, 0);
         int valueImax = 0;
         int valueJmax = 0;
         if (SIZEX == SIZEY) {
@@ -283,16 +460,16 @@ namespace terrain {
         }
     }
 
-    // Le générateur de tampon
+    // Le gÃ©nÃ©rateur de tampon
     template <typename T>
-    void UNIVERSE_STAMP_1(T & matrix, const int scale) {
+    void UNIVERSE_STAMP_1(T& matrix, const int scale) {
         long double halfScale = static_cast<double>(scale) / 2.;
         long double radius;
 
         auto powersOfTwo = std::make_unique<long double[]>(scale);
 
-        // On crée deux tables contenants les valeurs élevées à la puissance de deux.
-        // On calcul ainsi n fois ces valeurs au lieu de n².
+        // On crÃ©e deux tables contenants les valeurs Ã©levÃ©es Ã  la puissance de deux.
+        // On calcul ainsi n fois ces valeurs au lieu de nÂ².
         for (int x = 0; x < scale; ++x) {
             powersOfTwo[x] = (static_cast<double>(x) - halfScale) * (static_cast<double>(x) - halfScale);
         }
@@ -300,14 +477,14 @@ namespace terrain {
         for (int x = 0, X = 0; x < scale; ++x) {
             for (int y = 0; y < scale; ++y) {
                 // On calcule le rayon du cercle sur lequel se trouve le point courant.
-                // Opération très TRÈS gourmante en temps CPU
+                // OpÃ©ration trÃ¨s TRÃˆS gourmante en temps CPU
                 radius = sqrtl(powersOfTwo[y] + powersOfTwo[x]);
                 if (radius < halfScale) {
-                    // y a plus qu'à dessiner le cône.
+                    // y a plus qu'Ã  dessiner le cÃ´ne.
                     matrix[x][y] = (halfScale - radius) / (halfScale);
                 }
                 else {
-                    // Si on est en dehors du cercle, on se casse pas la tête et on affecte un zero.
+                    // Si on est en dehors du cercle, on se casse pas la tÃªte et on affecte un zero.
                     matrix[x][y] = 0;
                 }
             }
@@ -315,44 +492,44 @@ namespace terrain {
     }
 
     template <typename T>
-    void UNIVERSE_STAMP_NOISE(T & matrix, const T & stamp, const int scale, const int offsetX, const int offsetY, const int realScale) {
+    void UNIVERSE_STAMP_NOISE(T& matrix, const T& stamp, const int scale, const int offsetX, const int offsetY, const int realScale) {
 
-        // La condition d'arrêt de notre bruit récursif.
-        // Selon la granularité que l'on désire, on peut augmenter la valeur limite de scale.
+        // La condition d'arrÃªt de notre bruit rÃ©cursif.
+        // Selon la granularitÃ© que l'on dÃ©sire, on peut augmenter la valeur limite de scale.
         if (scale == 1) {
             return;
         }
 
         // Demi dimension courante
-        // Comme scale est une puissance de deux, plutôt que de diviser, on opère une rotation binaire.
+        // Comme scale est une puissance de deux, plutÃ´t que de diviser, on opÃ¨re une rotation binaire.
         int halfScale = scale >> 1;
         int x, y;
 
-        // Deux variables très importantes, ce sont elles qui déterminent ou sera appliqué le tampon.
-        // C'est le positionnement aléatoire qui fait toute la "beauté" de la heightmap.
+        // Deux variables trÃ¨s importantes, ce sont elles qui dÃ©terminent ou sera appliquÃ© le tampon.
+        // C'est le positionnement alÃ©atoire qui fait toute la "beautÃ©" de la heightmap.
         int randX = -halfScale + getRandomDist(generator) % scale;
         int randY = -halfScale + getRandomDist(generator) % scale;
 
-        // À chaque octave il faut diminuer l'influence du bruit.
-        // On se sert également de cette variable comme pas d'incrémentation des
-        // coordonnées du tampon.
+        // Ã€ chaque octave il faut diminuer l'influence du bruit.
+        // On se sert Ã©galement de cette variable comme pas d'incrÃ©mentation des
+        // coordonnÃ©es du tampon.
         int inc = realScale / scale;
 
-        // Deux variables incrémentales qui servent à récupérer le pixel locale au tampon, en fonction de l'octave.
-        // Elles sont toute les deux incrémentés avec la valeur de inc.
+        // Deux variables incrÃ©mentales qui servent Ã  rÃ©cupÃ©rer le pixel locale au tampon, en fonction de l'octave.
+        // Elles sont toute les deux incrÃ©mentÃ©s avec la valeur de inc.
         int stampX = 0, stampY = 0;
 
-        // Détermine le signe du tampon.
-        // S'il est positif, le terrain se surélève, à l'inverse, il se creuse
+        // DÃ©termine le signe du tampon.
+        // S'il est positif, le terrain se surÃ©lÃ¨ve, Ã  l'inverse, il se creuse
         long double sign = getRandomDist(generator) & 2 ? -1.0 : 1.0;
 
         int tmpCoordX, tmpCoordY;
 
-        for (x = 0, stampY = 0; x < scale; ++x, stampY = 0, stampX += inc /* On incrémente à l'échelle la coordonnée locale au tampon */ ) {
-            for (y = 0; y < scale; ++y, stampY += inc /* On incrémente à l'échelle la coordonnée locale au tampon */ ) {
-                // Avec ce test le gros bloc d'instructions est répété 1.27 fois moins que s'il n'y avait pas de test.
+        for (x = 0, stampY = 0; x < scale; ++x, stampY = 0, stampX += inc /* On incrÃ©mente Ã  l'Ã©chelle la coordonnÃ©e locale au tampon */) {
+            for (y = 0; y < scale; ++y, stampY += inc /* On incrÃ©mente Ã  l'Ã©chelle la coordonnÃ©e locale au tampon */) {
+                // Avec ce test le gros bloc d'instructions est rÃ©pÃ©tÃ© 1.27 fois moins que s'il n'y avait pas de test.
                 if (stamp[stampX][stampY] != 0) {
-                    // On économise des calculs fastidieux en stockant ces valeurs qui seront solicitées plusieurs fois.
+                    // On Ã©conomise des calculs fastidieux en stockant ces valeurs qui seront solicitÃ©es plusieurs fois.
                     tmpCoordX = (randX + offsetX + x + realScale) % realScale;
                     tmpCoordY = (randY + offsetY + y + realScale) % realScale;
                     matrix[tmpCoordX][tmpCoordY] += sign * stamp[stampX][stampY] / static_cast<long double>(inc);
@@ -360,22 +537,22 @@ namespace terrain {
             }
         }
 
-        // En divisant par deux la dimension courante à chaque récursion, et en modifiant l'offset,
-        // on subdivise en permanence la heighmap jusqu'à ce que la dimension ainsi divisée soit égale à un.
-        // En procédant ainsi, on travaille récursivement sur différentes
-        // portions de la heighmap. Il y a donc quatre portions par secteur et à chaque récursion, chacunes
-        // des portions devient elles même un secteur.
+        // En divisant par deux la dimension courante Ã  chaque rÃ©cursion, et en modifiant l'offset,
+        // on subdivise en permanence la heighmap jusqu'Ã  ce que la dimension ainsi divisÃ©e soit Ã©gale Ã  un.
+        // En procÃ©dant ainsi, on travaille rÃ©cursivement sur diffÃ©rentes
+        // portions de la heighmap. Il y a donc quatre portions par secteur et Ã  chaque rÃ©cursion, chacunes
+        // des portions devient elles mÃªme un secteur.
 
-        // Portion en haut à gauche du secteur courant
+        // Portion en haut Ã  gauche du secteur courant
         UNIVERSE_STAMP_NOISE(matrix, stamp, scale / 2, offsetX + 0, offsetY + 0, realScale);
 
-        // Portion en bas à gauche du secteur courant
+        // Portion en bas Ã  gauche du secteur courant
         UNIVERSE_STAMP_NOISE(matrix, stamp, scale / 2, offsetX + 0, offsetY + scale / 2, realScale);
 
-        // Portion en bas à droite du secteur courant
+        // Portion en bas Ã  droite du secteur courant
         UNIVERSE_STAMP_NOISE(matrix, stamp, scale / 2, offsetX + scale / 2, offsetY + scale / 2, realScale);
 
-        // Portion en haut à droite du secteur courant
+        // Portion en haut Ã  droite du secteur courant
         UNIVERSE_STAMP_NOISE(matrix, stamp, scale / 2, offsetX + scale / 2, offsetY + 0, realScale);
     }
 
@@ -393,14 +570,14 @@ namespace terrain {
         for (int i = 0; i < scale; ++i)
             stamp[i] = std::make_unique<long double[]>(scale);
 
-        // On génère d'abord notre tampon
+        // On gÃ©nÃ¨re d'abord notre tampon
         UNIVERSE_STAMP_1(stamp, scale);
 
-        // On lance notre bruit récursif.
-        // On conmmence la récursion avec l'octave la plus grande.
+        // On lance notre bruit rÃ©cursif.
+        // On conmmence la rÃ©cursion avec l'octave la plus grande.
         UNIVERSE_STAMP_NOISE(matrix, stamp, scale, 0, 0, scale);
 
-        // À partir d'ici, la heightmap est terminé. Il n'y a plus qu'à déterminer les extremums
+        // Ã€ partir d'ici, la heightmap est terminÃ©. Il n'y a plus qu'Ã  dÃ©terminer les extremums
         // pour normaliser la hauteur.
         long double max = 0, min = 65536;
         for (unsigned int x = 0; x < scale; ++x) {
@@ -484,7 +661,7 @@ namespace terrain {
                 }
             }
         }
-        if(!full) _tensor_noise(vHeights, scale, x, y, radius + 1, dec ? value - 1: value + 1, dec);
+        if (!full) _tensor_noise(vHeights, scale, x, y, radius + 1, dec ? value - 1 : value + 1, dec);
     }
 
     template<typename T>
@@ -518,14 +695,14 @@ namespace terrain {
     // https://fr.wikipedia.org/wiki/Sinus_cardinal
     template <typename T>
     T sinc(T in) {
-        // Par convention (Prolongement par continuité) : sinc(0) = 1.
-        return in == 0 ?  1 : sin(in) / in;
+        // Par convention (Prolongement par continuitÃ©) : sinc(0) = 1.
+        return in == 0 ? 1 : sin(in) / in;
     }
 
     template<typename T>
     void volcano(T& vHeights, const unsigned int scale)
     {
-    // https://knowledgemix.wordpress.com/tag/sinc-function/
+        // https://knowledgemix.wordpress.com/tag/sinc-function/
         auto matrix = std::make_unique <std::unique_ptr<double[]>[]>(scale);
         for (int i = 0; i < scale; ++i) {
             matrix.get()[i] = std::make_unique<double[]>(scale);
@@ -540,7 +717,7 @@ namespace terrain {
                 matrix[i][j] = h; // 512. * (h - .5);
             }
         }
-        double min = sin(1.) * sin(1.), max = sinc(0.); // sinc est décroissante sur [0; 1] et symétrique sur [-1; 1].
+        double min = sin(1.) * sin(1.), max = sinc(0.); // sinc est dÃ©croissante sur [0; 1] et symÃ©trique sur [-1; 1].
         // min <= matrix[i][j] <= max
         // 0 <= matrix[i][j] - min <= max - min
         // 0 <= ( matrix[i][j] - min ) / ( max - min ) <= 1 , max != min
@@ -569,7 +746,7 @@ namespace terrain {
                 int h = 10 * sqrt(rayon * rayon - k * k);
                 //int h = (rayon - k) * (rayon - k) / 10;// sqrt(rayon * rayon - k * k);
                 if (h > scale) h = scale;
-                for (int i = - k; i <= k; ++i) {
+                for (int i = -k; i <= k; ++i) {
                     int j = sqrt(k * k - i * i);
                     int ip = (x + i) % scale;
                     for (int l = 0; l <= j; ++l) {
@@ -621,15 +798,15 @@ namespace terrain {
         }
 
         std::vector<std::thread> vThreads;
-        for(int thr = 0; thr < 8; ++thr)
-            vThreads.emplace_back(std::thread (terrain::thrSinusCard, std::ref(matrix), std::ref(_sinc), scale));
-        
+        for (int thr = 0; thr < 8; ++thr)
+            vThreads.emplace_back(std::thread(terrain::thrSinusCard, std::ref(matrix), std::ref(_sinc), scale));
+
         while (!vThreads.empty()) {
             vThreads.back().join();
             vThreads.pop_back();
         }
 
-        // À partir d'ici, la heightmap est terminée. Il n'y a plus qu'à déterminer les extremums
+        // Ã€ partir d'ici, la heightmap est terminÃ©e. Il n'y a plus qu'Ã  dÃ©terminer les extremums
         // pour normaliser la hauteur.
         long double max = 0, min = 65536;
         for (unsigned int x = 0; x < scale; ++x) {
@@ -666,39 +843,39 @@ namespace terrain {
         for (int i = -1; i < 2; ++i) {
             for (int j = -1; j < 2; ++j) {
                 if (i == 0 && j == 0)
-                    continue; // On ne repart pas de la même case.
-                if (x + i >= 0 && y + j >= 0 && x + i < static_cast<int>(SIZEY) && y + j < static_cast<int>(SIZEY)) {
-                    // On s'arrête sur les cases d'eau.
+                    continue; // On ne repart pas de la mÃªme case.
+                if (x + i >= 0 && y + j >= 0 && x + i < static_cast<int>(SIZEX) && y + j < static_cast<int>(SIZEY)) {
+                    // On s'arrÃªte sur les cases d'eau.
                     if (arrHeights[x + i][y + j] > 0) {
                         if (exhaustive) {
                             auto occ = std::find(vPath.begin(), vPath.end(), std::make_pair<int, int>(x + i, y + j));
                             if (occ != vPath.end())
                                 continue;
                         }
-					    // On ne prend que les cases plus basses ou de même niveau que la case de départ.
-					    // On recherche la ou les plus basses.
-					    if (arrHeights[x + i][y + j] <= arrHeights[x][y]) {
-						    // La première est toujours la plus basse par défaut.
-						    if (vMax.empty()) {
-							    vMax.push_back(std::make_pair<int, int>(x + i, y + j));
-							    xMin = x + i;
-							    yMin = y + j;
-						    }
-						    // Une case plus basse que les autres élimine toutes les autres.
-						    else if (arrHeights[x + i][y + j] < arrHeights[xMin][yMin]) {
-							    vMax.clear();
-							    vMax.push_back(std::make_pair<int, int>(x + i, y + j));
-							    xMin = x + i;
-							    yMin = y + j;
-						    }
-						    // A défaut de case plus basse, on garde celles de même niveau.
-						    else if (arrHeights[x + i][y + j] == arrHeights[xMin][yMin]) {
-							    vMax.push_back(std::make_pair<int, int>(x + i, y + j));
-							    xMin = x + i;
-							    yMin = y + j;
-						    }
-					    }
-				    }
+                        // On ne prend que les cases plus basses ou de mÃªme niveau que la case de dÃ©part.
+                        // On recherche la ou les plus basses.
+                        if (arrHeights[x + i][y + j] <= arrHeights[x][y]) {
+                            // La premiÃ¨re est toujours la plus basse par dÃ©faut.
+                            if (vMax.empty()) {
+                                vMax.push_back(std::make_pair<int, int>(x + i, y + j));
+                                xMin = x + i;
+                                yMin = y + j;
+                            }
+                            // Une case plus basse que les autres Ã©limine toutes les autres.
+                            else if (arrHeights[x + i][y + j] < arrHeights[xMin][yMin]) {
+                                vMax.clear();
+                                vMax.push_back(std::make_pair<int, int>(x + i, y + j));
+                                xMin = x + i;
+                                yMin = y + j;
+                            }
+                            // A dÃ©faut de case plus basse, on garde celles de mÃªme niveau.
+                            else if (arrHeights[x + i][y + j] == arrHeights[xMin][yMin]) {
+                                vMax.push_back(std::make_pair<int, int>(x + i, y + j));
+                                xMin = x + i;
+                                yMin = y + j;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -707,7 +884,7 @@ namespace terrain {
         }
         else {
             for (const auto& ref : vMax) {
-                // On ne passe pas deux fois sur la même case.
+                // On ne passe pas deux fois sur la mÃªme case.
                 auto occ = std::find(vPath.begin(), vPath.end(), ref);
                 if (occ == vPath.end()) {
                     vPath.push_back(ref);
@@ -724,7 +901,7 @@ namespace terrain {
     }
 
     template<typename T>
-    bool _levelmin(T& arrHeights, const std::size_t SIZEX, const std::size_t SIZEY, const int x, const int y, std::vector<std::pair<int, int>>& vPath, std::tuple<int, int, int> & candidat)
+    bool _levelmin(T& arrHeights, const std::size_t SIZEX, const std::size_t SIZEY, const int x, const int y, std::vector<std::pair<int, int>>& vPath, std::tuple<int, int, int>& candidat)
     {
         bool premier = true;
         for (int i = -1; i < 2; ++i) {
@@ -733,9 +910,9 @@ namespace terrain {
             for (int j = -1; j < 2; ++j) {
                 if (y + j < 0) continue;
                 if (y + j > SIZEY - 1) continue;
-                // On exclut la case de référence :
+                // On exclut la case de rÃ©fÃ©rence :
                 if (i == 0 && j == 0) continue;
-                // On ne passe jamais par la même case :
+                // On ne passe jamais par la mÃªme case :
                 const std::pair<int, int> ref = std::pair<int, int>(x + i, y + j);
                 if (vPath.end() != std::find(vPath.begin(), vPath.end(), ref)) continue;
                 // Le premier est toujours valide :
@@ -758,7 +935,7 @@ namespace terrain {
     void _erosion(T& arrHeights, const std::size_t SIZEX, const std::size_t SIZEY, const int x, const int y, std::vector<std::pair<int, int>>& vPath)
     {
         std::tuple<int, int, int> firstcandidat;
-        if(!_levelmin(arrHeights, SIZEX, SIZEY, x, y, vPath, firstcandidat))
+        if (!_levelmin(arrHeights, SIZEX, SIZEY, x, y, vPath, firstcandidat))
             return;
 
         std::vector<std::tuple<int, int, int>> candidats;
@@ -775,15 +952,15 @@ namespace terrain {
                     continue;
                 if (y + j > SIZEY - 1)
                     continue;
-                // On exclut la case de référence :
+                // On exclut la case de rÃ©fÃ©rence :
                 if (i == 0 && j == 0)
                     continue;
                 // On exclut le premier :
                 if (x + i == std::get<0>(firstcandidat) && y + j == std::get<1>(firstcandidat))
                     continue;
-                // On ne passe jamais par la même case :
+                // On ne passe jamais par la mÃªme case :
                 const std::pair<int, int> ref = std::pair<int, int>(x + i, y + j);
-                if(vPath.end() != std::find(vPath.begin(), vPath.end(), ref))
+                if (vPath.end() != std::find(vPath.begin(), vPath.end(), ref))
                     continue;
                 if (arrHeights[x + i][y + j] <= std::get<2>(firstcandidat))
                     candidats.emplace_back(std::tuple<int, int, int>(x + i, y + j, arrHeights[x + i][y + j]));
@@ -791,7 +968,7 @@ namespace terrain {
                     rebuts.emplace_back(std::tuple<int, int, int>(x + i, y + j, arrHeights[x + i][y + j]));
             }
         }
-		
+
         for (const auto& candidat : candidats)
         {
             vPath.push_back(std::pair<int, int>(std::get<0>(candidat), std::get<1>(candidat)));
@@ -808,7 +985,8 @@ namespace terrain {
         std::stack<std::vector<std::tuple<int, int, int>>> cstack;
         do
         {
-            cstack.push(std::vector<std::tuple<int, int, int>>);
+            std::vector<std::tuple<int, int, int>> temp;
+            cstack.push(std::move(temp));
             {
                 std::tuple<int, int, int> firstcandidat;
                 if (!_levelmin(arrHeights, SIZEX, SIZEY, x, y, vPath, firstcandidat))
@@ -828,13 +1006,13 @@ namespace terrain {
                             continue;
                         if (y + j > SIZEY - 1)
                             continue;
-                        // On exclut la case de référence :
+                        // On exclut la case de rÃ©fÃ©rence :
                         if (i == 0 && j == 0)
                             continue;
                         // On exclut le premier :
                         if (x + i == std::get<0>(firstcandidat) && y + j == std::get<1>(firstcandidat))
                             continue;
-                        // On ne passe jamais par la même case :
+                        // On ne passe jamais par la mÃªme case :
                         const std::pair<int, int> ref = std::pair<int, int>(x + i, y + j);
                         if (vPath.end() != std::find(vPath.begin(), vPath.end(), ref))
                             continue;
@@ -864,13 +1042,13 @@ namespace terrain {
                             continue;
                         if (y + j > SIZEY - 1)
                             continue;
-                        // On exclut la case de référence :
+                        // On exclut la case de rÃ©fÃ©rence :
                         if (i == 0 && j == 0)
                             continue;
                         // On exclut le premier :
                         if (x + i == std::get<0>(firstcandidat) && y + j == std::get<1>(firstcandidat))
                             continue;
-                        // On ne passe jamais par la même case :
+                        // On ne passe jamais par la mÃªme case :
                         const std::pair<int, int> ref = std::pair<int, int>(x + i, y + j);
                         if (vPath.end() != std::find(vPath.begin(), vPath.end(), ref))
                             continue;
@@ -906,7 +1084,7 @@ namespace terrain {
     {
         for (int i = -1; i < 2; ++i) {
             for (int j = -1; j < 2; ++j) {
-                if (x + i >= 0 && y + j >= 0 && x + i < static_cast<int>(SIZEY) && y + j < static_cast<int>(SIZEY)) {
+                if (x + i >= 0 && y + j >= 0 && x + i < static_cast<int>(SIZEX) && y + j < static_cast<int>(SIZEY)) {
                     --arrHeights[x + i][y + j];
                 }
             }
@@ -918,8 +1096,8 @@ namespace terrain {
     {
         // Recherche de la zone la plus haute.
         int x = 0, y = 0;
-        for (int  i = 0; i < SIZEX; ++i) {
-            for (int  j = 0; j < SIZEY; ++j) {
+        for (int i = 0; i < SIZEX; ++i) {
+            for (int j = 0; j < SIZEY; ++j) {
                 if (arrHeights[i][j] > arrHeights[x][y]) {
                     x = i;
                     y = j;
@@ -941,7 +1119,7 @@ namespace terrain {
     }
 
     template<typename T>
-    void rivers_arrayed(T & arrHeights, const std::size_t SIZEX, const std::size_t SIZEY)
+    void rivers_arrayed(T& arrHeights, const std::size_t SIZEX, const std::size_t SIZEY)
     {
         // Recherche des extrema locaux.
         std::vector<std::tuple<int, int, int>> vExtrema;
@@ -1003,7 +1181,7 @@ namespace terrain {
         }
         switch (type) {
         default:
-        case 0 :
+        case 0:
             diamond_square(vHeights, static_cast<unsigned int>(side));
             break;
         case 1:
@@ -1023,6 +1201,12 @@ namespace terrain {
             break;
         case 6:
             sinus_cardinal(vHeights, static_cast<unsigned int>(side));
+            break;
+        case 7:
+            simplex(vHeights, static_cast<unsigned int>(side));
+            break;
+        case 8:
+            opensimplex2(vHeights, static_cast<unsigned int>(side));
             break;
         }
         if (type == 2) {
