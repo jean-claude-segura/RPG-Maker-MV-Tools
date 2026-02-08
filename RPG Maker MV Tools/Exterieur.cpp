@@ -6,8 +6,8 @@ static std::unique_ptr<MakerMVMapCommon> currentMap;
 
 FIBITMAP* makeGrid(const std::size_t SIZEX, const std::size_t SIZEY, const int width, const int height)
 {
-	double ratio = static_cast<double>(max(width, height)) / static_cast<double>(max(SIZEX, SIZEY));
-	int reste = max(width, height) % max(SIZEX, SIZEY);
+	double ratio = static_cast<double>(std::max(width, height)) / static_cast<double>(std::max(SIZEX, SIZEY));
+	int reste = std::max(width, height) % std::max(SIZEX, SIZEY);
 	FIBITMAP* grid = FreeImage_Allocate(width, height, 24);
 	RGBQUAD pxzero;
 	pxzero.rgbRed = 0;
@@ -41,8 +41,8 @@ FIBITMAP* makeGrid(const std::size_t SIZEX, const std::size_t SIZEY, const int w
 
 FIBITMAP* makeGridFast(const std::size_t SIZEX, const std::size_t SIZEY, const int width, const int height)
 {
-	double ratio = static_cast<double>(max(width, height)) / static_cast<double>(max(SIZEX, SIZEY));
-	int reste = max(width, height) % max(SIZEX, SIZEY);
+	double ratio = static_cast<double>(std::max(width, height)) / static_cast<double>(std::max(SIZEX, SIZEY));
+	int reste = std::max(width, height) % std::max(SIZEX, SIZEY);
 	auto bmp = std::make_unique<uint8_t[]>(width * height * 3);
 
 	memset(bmp.get(), 0xFF, width * height * 3);

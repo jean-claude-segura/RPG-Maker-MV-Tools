@@ -18,7 +18,7 @@ namespace terrain {
     template <typename T>
     std::size_t newSide(const T left, const T right)
     {
-        auto maxsize = static_cast<unsigned int>(max(left, right));
+        auto maxsize = static_cast<unsigned int>(std::max(left, right));
         unsigned int exp = static_cast<unsigned int>(log2(maxsize));
         auto newsize = exp2(exp2(exp) + 1 >= maxsize ? exp : exp + 1) + 1;
         return static_cast<std::size_t>(newsize);

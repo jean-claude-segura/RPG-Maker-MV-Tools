@@ -2,6 +2,7 @@
 #include "Resource.h"
 #include "Includes\FreeImage.h"
 #include "terrain.h"
+#include <algorithm>
 
 template<typename T>
 unsigned int getLevel(T& vHeights, unsigned int size, int i, int j, signed int levels)
@@ -153,7 +154,7 @@ void dispLandscapeFast(HWND hDlg, T& vHeights, std::size_t SIZEX, std::size_t SI
 	if (bitmap) {
 		RECT pictureRect;
 		GetWindowRect(GetDlgItem(hDlg, IDC_PICTURE), &pictureRect);
-		int ratio = max(SIZEX, SIZEY) / min(SIZEX, SIZEY);		
+		int ratio = std::max(SIZEX, SIZEY) / std::min(SIZEX, SIZEY);		
 		HDC hDC = GetWindowDC(GetDlgItem(hDlg, IDC_PICTURE));
 		SetStretchBltMode(hDC, COLORONCOLOR);
 		StretchDIBits(hDC, 0, 0,
